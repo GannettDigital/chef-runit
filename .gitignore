@@ -1,6 +1,7 @@
 metadata.json
 .vagrant
 Berksfile.lock
+Cheffile.lock
 *~
 *#
 .#*
@@ -8,6 +9,8 @@ Berksfile.lock
 .*.sw[a-z]
 *.un~
 /cookbooks
+.librarian
+tmp/
 
 # Bundler
 Gemfile.lock
@@ -15,3 +18,7 @@ bin/*
 .bundle/*
 .kitchen/
 .kitchen.local.yml
+
+## ignore ruby versioning?
+.ruby-version
+.ruby-gemset
