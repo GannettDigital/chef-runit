@@ -26,11 +26,10 @@ link '/usr/local/bin/sv' do
   )
 end
 
+package 'binutils'
+package 'file'
+package 'lsof'
 package 'socat'
-
-package 'lsof' do
-  package_name 'lsof' if platform_family?('rhel', 'fedora')
-end
 
 # Create a normal user to run services later
 group 'floyd'
@@ -222,6 +221,22 @@ end
 
 runit_service 'un-downed-service-deleted' do
   start_down true
+end
+
+runit_service 'supervisor_owner' do
+  supervisor_owner 'floyd'
+  default_logger true
+end
+
+runit_service 'supervisor_group' do
+  supervisor_group 'floyd'
+  default_logger true
+end
+
+runit_service 'supervisor_owner_and_group' do
+  supervisor_owner 'floyd'
+  supervisor_group 'floyd'
+  default_logger true
 end
 
 runit_service 'un-downed-service-deleted remove down' do

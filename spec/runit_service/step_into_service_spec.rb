@@ -248,6 +248,11 @@ describe 'runit_service' do
       )
     end
 
+    it 'sets the sensitive attribute on the env file resource' do
+      expect(chef_run).to create_file(::File.join(service_svdir, 'env', 'PATH'))
+        .with(sensitive: true)
+    end
+
     it 'zaps any extra env files' do
       expect(chef_run).to run_ruby_block('zap extra env files for env-files service')
     end
@@ -286,6 +291,84 @@ describe 'runit_service' do
         cookbook: 'runit_test',
         variables: { options: {} }
       )
+    end
+  end
+
+  context 'with custom supervisor user' do
+    let(:service) { chef_run.runit_service('supervisor_owner') }
+    let(:service_svdir) { ::File.join(sv_dir, service.name) }
+    let(:service_servicedir) { ::File.join(service_dir, service.name) }
+    let(:service_options) { Hash.new }
+    let(:supervise_files) { %w(ok status control) }
+
+    it_behaves_like 'runit_service with default logging'
+
+    it 'Makes the supervise directory world writable' do
+      expect(chef_run).to create_directory(::File.join(service_servicedir, 'supervise')).with(mode: '0755')
+    end
+
+    it 'Changes ownership of supervise files to the supervisor_owner' do
+      supervise_files.each do |file|
+        expect(chef_run).to touch_file(::File.join(service_servicedir, 'supervise', file)).with(owner: 'floyd')
+      end
+    end
+
+    it 'Leaves group ownership of supervise files as root' do
+      supervise_files.each do |file|
+        expect(chef_run).to touch_file(::File.join(service_servicedir, 'supervise', file)).with(group: 'root')
+      end
+    end
+  end
+
+  context 'with custom supervisor group' do
+    let(:service) { chef_run.runit_service('supervisor_group') }
+    let(:service_svdir) { ::File.join(sv_dir, service.name) }
+    let(:service_servicedir) { ::File.join(service_dir, service.name) }
+    let(:service_options) { Hash.new }
+    let(:supervise_files) { %w(ok status control) }
+
+    it_behaves_like 'runit_service with default logging'
+
+    it 'Makes the supervise directory world writable' do
+      expect(chef_run).to create_directory(::File.join(service_servicedir, 'supervise')).with(mode: '0755')
+    end
+
+    it 'Leaves ownership of supervise files as root' do
+      supervise_files.each do |file|
+        expect(chef_run).to touch_file(::File.join(service_servicedir, 'supervise', file)).with(owner: 'root')
+      end
+    end
+
+    it 'Changes group ownership of supervise files as supervisor_group' do
+      supervise_files.each do |file|
+        expect(chef_run).to touch_file(::File.join(service_servicedir, 'supervise', file)).with(group: 'floyd')
+      end
+    end
+  end
+
+  context 'with custom supervisor owner and group' do
+    let(:service) { chef_run.runit_service('supervisor_owner_and_group') }
+    let(:service_svdir) { ::File.join(sv_dir, service.name) }
+    let(:service_servicedir) { ::File.join(service_dir, service.name) }
+    let(:service_options) { Hash.new }
+    let(:supervise_files) { %w(ok status control) }
+
+    it_behaves_like 'runit_service with default logging'
+
+    it 'Makes the supervise directory world writable' do
+      expect(chef_run).to create_directory(::File.join(service_servicedir, 'supervise')).with(mode: '0755')
+    end
+
+    it 'Changes ownership of supervise files to the supervisor_owner' do
+      supervise_files.each do |file|
+        expect(chef_run).to touch_file(::File.join(service_servicedir, 'supervise', file)).with(owner: 'floyd')
+      end
+    end
+
+    it 'Changes group ownership of supervise files as supervisor_group' do
+      supervise_files.each do |file|
+        expect(chef_run).to touch_file(::File.join(service_servicedir, 'supervise', file)).with(group: 'floyd')
+      end
     end
   end
 end
